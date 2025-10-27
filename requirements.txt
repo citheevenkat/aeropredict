@@ -1,0 +1,32 @@
+# AeroPredict - Python Dependencies
+
+# Core Data Science
+pandas>=1.3.0
+numpy>=1.21.0
+
+# Database
+sqlite3  # Built-in with Python
+
+# Date/Time
+python-dateutil>=2.8.2
+
+# Optional: Advanced ML (uncomment if implementing advanced features)
+# scikit-learn>=1.0.0
+# tensorflow>=2.8.0
+# xgboost>=1.5.0
+
+# Optional: API Development (uncomment if building REST API)
+# flask>=2.0.0
+# fastapi>=0.68.0
+# uvicorn>=0.15.0
+
+# Optional: Data Visualization (uncomment if adding charts)
+# matplotlib>=3.4.0
+# seaborn>=0.11.0
+# plotly>=5.3.0
+
+# Development Tools (optional)
+# pytest>=6.2.0
+# black>=21.0
+# flake8>=3.9.0
+# mypy>=0.910

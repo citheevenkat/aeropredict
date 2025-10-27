@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AeroPredict - Live Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 20px;
+            opacity: 0.9;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1e3a8a;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-normal { background: #10b981; }
+        .status-warning { background: #f59e0b; }
+        .status-critical { background: #ef4444; }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .metric:last-child {
+            border-bottom: none;
+        }
+        
+        .metric-label {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .metric-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1e3a8a;
+        }
+        
+        .alert-box {
+            background: #fee2e2;
+            border-left: 4px solid #ef4444;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-box.warning {
+            background: #fef3c7;
+            border-left-color: #f59e0b;
+        }
+        
+        .alert-box.success {
+            background: #d1fae5;
+            border-left-color: #10b981;
+        }
+        
+        .alert-title {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .alert-details {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .engine-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .engine-card {
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .engine-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .engine-card.critical {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+        
+        .engine-card.warning {
+            border-color: #f59e0b;
+            background: #fffbeb;
+        }
+        
+        .engine-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1e3a8a;
+            margin-bottom: 10px;
+        }
+        
+        .risk-level {
+            font-size: 36px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .risk-level.high { color: #ef4444; }
+        .risk-level.medium { color: #f59e0b; }
+        .risk-level.low { color: #10b981; }
+        
+        .days-to-failure {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .action-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+        
+        .action-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #1e3a8a;
+            margin-bottom: 20px;
+        }
+        
+        .action-timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-bottom: 30px;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -22px;
+            top: 0;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #3b82f6;
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px #3b82f6;
+        }
+        
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            left: -15px;
+            top: 16px;
+            width: 2px;
+            height: calc(100% - 16px);
+            background: #cbd5e1;
+        }
+        
+        .timeline-item:last-child::after {
+            display: none;
+        }
+        
+        .timeline-content {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .timeline-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .status-complete {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-progress {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .cost-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .cost-card {
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .cost-card.reactive {
+            background: #fee2e2;
+            border: 2px solid #ef4444;
+        }
+        
+        .cost-card.predictive {
+            background: #d1fae5;
+            border: 2px solid #10b981;
+        }
+        
+        .cost-label {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+        
+        .cost-amount {
+            font-size: 42px;
+            font-weight: bold;
+        }
+        
+        .cost-card.reactive .cost-amount { color: #ef4444; }
+        .cost-card.predictive .cost-amount { color: #10b981; }
+        
+        .savings-badge {
+            display: inline-block;
+            background: #10b981;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+        
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+        
+        .sensor-data {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .sensor-item {
+            background: #f9fafb;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .sensor-label {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 5px;
+        }
+        
+        .sensor-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1e3a8a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛫 AeroPredict</h1>
+            <p class="subtitle">AI-Powered Predictive Maintenance - Live Demo</p>
+        </header>
+        
+        <!-- Critical Alert -->
+        <div class="alert-box">
+            <div class="alert-title">
+                🚨 Critical Alert Detected
+            </div>
+            <div class="alert-details">
+                <strong>Engine #2</strong> showing high failure probability (89%). Automated response initiated.
+            </div>
+        </div>
+        
+        <!-- Dashboard Stats -->
+        <div class="dashboard">
+            <div class="card">
+                <div class="card-title">
+                    <span class="status-indicator status-normal"></span>
+                    Fleet Status
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Total Aircraft</span>
+                    <span class="metric-value">50</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Operational</span>
+                    <span class="metric-value" style="color: #10b981;">48</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Maintenance</span>
+                    <span class="metric-value" style="color: #f59e0b;">2</span>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">
+                    <span class="status-indicator status-warning"></span>
+                    Predictions Today
+                </div>
+                <div class="metric">
+                    <span class="metric-label">High Risk</span>
+                    <span class="metric-value" style="color: #ef4444;">3</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Medium Risk</span>
+                    <span class="metric-value" style="color: #f59e0b;">7</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Low Risk</span>
+                    <span class="metric-value" style="color: #10b981;">190</span>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">
+                    <span class="status-indicator status-normal"></span>
+                    Cost Savings (MTD)
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Prevented Failures</span>
+                    <span class="metric-value">12</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Total Savings</span>
+                    <span class="metric-value" style="color: #10b981;">$624K</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">vs. Reactive</span>
+                    <span class="metric-value" style="color: #10b981;">89%↓</span>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">
+                    <span class="status-indicator status-normal"></span>
+                    AI Performance
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Accuracy Rate</span>
+                    <span class="metric-value">87%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Avg Lead Time</span>
+                    <span class="metric-value">45 days</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Response Time</span>
+                    <span class="metric-value">342ms</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Engine Monitoring -->
+        <div class="card">
+            <div class="card-title">Engine Health Monitoring - Aircraft A320-001</div>
+            
+            <div class="engine-grid">
+                <div class="engine-card critical" onclick="showEngineDetails(2)">
+                    <div class="engine-number">Engine #1</div>
+                    <div class="risk-level low">12%</div>
+                    <div class="days-to-failure">✓ Normal Operation</div>
+                </div>
+                
+                <div class="engine-card critical" onclick="showEngineDetails(2)">
+                    <div class="engine-number">Engine #2</div>
+                    <div class="risk-level high">89%</div>
+                    <div class="days-to-failure">⚠️ 15 days to failure</div>
+                </div>
+                
+                <div class="engine-card">
+                    <div class="engine-number">Engine #3</div>
+                    <div class="risk-level low">8%</div>
+                    <div class="days-to-failure">✓ Normal Operation</div>
+                </div>
+                
+                <div class="engine-card warning">
+                    <div class="engine-number">Engine #4</div>
+                    <div class="risk-level medium">34%</div>
+                    <div class="days-to-failure">⚠️ 62 days to failure</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Engine #2 Details -->
+        <div class="card" id="engine-details">
+            <div class="card-title">🔍 Engine #2 - Detailed Analysis</div>
+            
+            <div class="alert-box warning" style="margin-top: 15px;">
+                <div class="alert-title">Turbine Blade Degradation Detected</div>
+                <div class="alert-details">
+                    ML Model Confidence: <strong>89%</strong><br>
+                    Predicted Failure: <strong>15 days</strong><br>
+                    Component: <strong>High-Pressure Turbine Blade Assembly</strong>
+                </div>
+            </div>
+            
+            <h4 style="margin: 20px 0 10px 0; color: #1e3a8a;">Real-Time Sensor Data</h4>
+            <div class="sensor-data">
+                <div class="sensor-item">
+                    <div class="sensor-label">Temperature</div>
+                    <div class="sensor-value" style="color: #ef4444;">1,847°F</div>
+                </div>
+                <div class="sensor-item">
+                    <div class="sensor-label">Vibration</div>
+                    <div class="sensor-value" style="color: #ef4444;">8.2 mm/s</div>
+                </div>
+                <div class="sensor-item">
+                    <div class="sensor-label">Pressure</div>
+                    <div class="sensor-value">42.3 psi</div>
+                </div>
+                <div class="sensor-item">
+                    <div class="sensor-label">RPM</div>
+                    <div class="sensor-value">15,240</div>
+                </div>
+                <div class="sensor-item">
+                    <div class="sensor-label">Oil Temp</div>
+                    <div class="sensor-value">215°F</div>
+                </div>
+                <div class="sensor-item">
+                    <div class="sensor-label">Fuel Flow</div>
+                    <div class="sensor-value">2,340 lb/hr</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Automated Actions -->
+        <div class="action-section">
+            <div class="action-title">⚡ Automated Response Timeline</div>
+            
+            <div class="action-timeline">
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <span class="timeline-status status-complete">✓ COMPLETE</span>
+                        <h4 style="margin: 8px 0;">AI Prediction Generated</h4>
+                        <p style="color: #6b7280; font-size: 14px;">
+                            Machine learning model analyzed 20,000 data points and predicted failure with 89% confidence.
+                        </p>
+                        <small style="color: #9ca3af;">Completed: 2 hours ago</small>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <span class="timeline-status status-complete">✓ COMPLETE</span>
+                        <h4 style="margin: 8px 0;">Parts Automatically Ordered</h4>
+                        <p style="color: #6b7280; font-size: 14px;">
+                            <strong>Part:</strong> High-Pressure Turbine Blade Assembly (P/N: HPT-8472-A)<br>
+                            <strong>Supplier:</strong> GE Aviation Parts (Best price + availability)<br>
+                            <strong>Cost:</strong> $4,200 | <strong>Delivery:</strong> 5-7 days
+                        </p>
+                        <small style="color: #9ca3af;">Completed: 1 hour ago</small>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <span class="timeline-status status-progress">⏳ IN PROGRESS</span>
+                        <h4 style="margin: 8px 0;">Maintenance Scheduled</h4>
+                        <p style="color: #6b7280; font-size: 14px;">
+                            <strong>Date:</strong> Nov 2, 2025 (10 days)<br>
+                            <strong>Duration:</strong> 6 hours<br>
+                            <strong>Window:</strong> Overnight maintenance slot (1:00 AM - 7:00 AM)<br>
+                            <strong>Impact:</strong> Zero flight cancellations
+                        </p>
+                        <small style="color: #9ca3af;">Technician team notified</small>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <span class="timeline-status status-pending">📋 PENDING</span>
+                        <h4 style="margin: 8px 0;">Maintenance Execution</h4>
+                        <p style="color: #6b7280; font-size: 14px;">
+                            Certified technicians will replace turbine blade assembly during scheduled window.
+                        </p>
+                        <small style="color: #9ca3af;">Scheduled: Nov 2, 2025</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Cost Comparison -->
+        <div class="action-section">
+            <div class="action-title">💰 Cost Savings Analysis</div>
+            
+            <div class="cost-comparison">
+                <div class="cost-card reactive">
+                    <div class="cost-label">Traditional Reactive Maintenance</div>
+                    <div class="cost-amount">$52,000</div>
+                    <ul style="text-align: left; margin-top: 15px; font-size: 14px; color: #6b7280;">
+                        <li>Emergency repair: $18,000</li>
+                        <li>Rush parts (3x cost): $12,600</li>
+                        <li>Downtime (48hrs): $15,400</li>
+                        <li>Flight cancellations: $6,000</li>
+                    </ul>
+                </div>
+                
+                <div class="cost-card predictive">
+                    <div class="cost-label">AeroPredict Predictive Maintenance</div>
+                    <div class="cost-amount">$6,500</div>
+                    <ul style="text-align: left; margin-top: 15px; font-size: 14px; color: #6b7280;">
+                        <li>Planned maintenance: $2,300</li>
+                        <li>Standard parts: $4,200</li>
+                        <li>Downtime (6hrs): $0</li>
+                        <li>Flight cancellations: $0</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <div class="savings-badge">
+                    💵 Total Savings: $45,500 (89% Reduction)
+                </div>
+            </div>
+        </div>
+        
+        <!-- Success Message -->
+        <div class="alert-box success" style="margin-top: 20px;">
+            <div class="alert-title">✅ System Operating Optimally</div>
+            <div class="alert-details">
+                AeroPredict has prevented <strong>12 failures</strong> this month, saving <strong>$624,000</strong> compared to reactive maintenance. 
+                All high-risk components have automated responses in progress.
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showEngineDetails(engineNum) {
+            const detailsSection = document.getElementById('engine-details');
+            detailsSection.scrollIntoView({ behavior: 'smooth' });
+            detailsSection.style.border = '3px solid #3b82f6';
+            setTimeout(() => {
+                detailsSection.style.border = 'none';
+            }, 2000);
+        }
+        
+        // Simulate live sensor updates
+        setInterval(() => {
+            const sensors = document.querySelectorAll('.sensor-value');
+            sensors.forEach(sensor => {
+                const currentValue = parseFloat(sensor.textContent);
+                if (!isNaN(currentValue)) {
+                    const variation = (Math.random() - 0.5) * 2;
+                    const newValue = (currentValue + variation).toFixed(1);
+                    sensor.textContent = newValue;
+                }
+            });
+        }, 3000);
+    </script>
+</body>
+</html>

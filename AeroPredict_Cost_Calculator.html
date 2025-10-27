@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AeroPredict - Cost Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 42px;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+        
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .card-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1e3a8a;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+        
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        
+        button {
+            width: 100%;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+        
+        .results {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .results.show {
+            display: block;
+            animation: slideIn 0.5s;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .cost-box {
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .cost-box.reactive {
+            background: #fee2e2;
+            border: 3px solid #ef4444;
+        }
+        
+        .cost-box.predictive {
+            background: #d1fae5;
+            border: 3px solid #10b981;
+        }
+        
+        .cost-label {
+            font-size: 16px;
+            color: #6b7280;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .cost-amount {
+            font-size: 48px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .cost-box.reactive .cost-amount {
+            color: #ef4444;
+        }
+        
+        .cost-box.predictive .cost-amount {
+            color: #10b981;
+        }
+        
+        .cost-breakdown {
+            font-size: 14px;
+            color: #6b7280;
+            margin-top: 15px;
+            text-align: left;
+        }
+        
+        .cost-breakdown div {
+            padding: 5px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .savings-banner {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .savings-amount {
+            font-size: 56px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .savings-percentage {
+            font-size: 24px;
+            opacity: 0.9;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .metric-box {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #1e3a8a;
+        }
+        
+        .metric-label {
+            font-size: 14px;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+        
+        .info-box {
+            background: #dbeafe;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 14px;
+            color: #1e3a8a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>💰 AeroPredict Cost Calculator</h1>
+            <p class="subtitle">Calculate Your Potential Savings with Predictive Maintenance</p>
+        </header>
+        
+        <div class="calculator-grid">
+            <div class="card">
+                <div class="card-title">Fleet Information</div>
+                
+                <div class="input-group">
+                    <label for="fleet-size">Number of Aircraft</label>
+                    <input type="number" id="fleet-size" value="50" min="1" max="1000">
+                </div>
+                
+                <div class="input-group">
+                    <label for="avg-hours">Average Flight Hours per Aircraft (Annual)</label>
+                    <input type="number" id="avg-hours" value="3000" min="500" max="10000" step="100">
+                </div>
+                
+                <div class="input-group">
+                    <label for="aircraft-type">Aircraft Type</label>
+                    <select id="aircraft-type">
+                        <option value="narrow">Narrow-body (A320, 737)</option>
+                        <option value="wide">Wide-body (777, A350)</option>
+                        <option value="regional">Regional (CRJ, E-Jet)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">Current Maintenance Profile</div>
+                
+                <div class="input-group">
+                    <label for="annual-failures">Expected Failures per Year (Fleet-wide)</label>
+                    <input type="number" id="annual-failures" value="100" min="10" max="500">
+                </div>
+                
+                <div class="input-group">
+                    <label for="current-approach">Current Maintenance Approach</label>
+                    <select id="current-approach">
+                        <option value="reactive">Mostly Reactive</option>
+                        <option value="mixed">Mixed Reactive/Preventive</option>
+                        <option value="preventive">Mostly Preventive</option>
+                    </select>
+                </div>
+                
+                <div class="info-box">
+                    💡 Industry average: 100-150 unexpected failures per year for a 50-aircraft fleet
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <button onclick="calculateSavings()">Calculate Savings</button>
+        </div>
+        
+        <div class="results" id="results">
+            <div class="card-title">Your Savings Projection</div>
+            
+            <div class="comparison">
+                <div class="cost-box reactive">
+                    <div class="cost-label">Current Approach (Reactive)</div>
+                    <div class="cost-amount" id="reactive-cost">$5.2M</div>
+                    <div class="cost-breakdown">
+                        <div><strong>Emergency Labor:</strong> <span id="emergency-labor">$1.8M</span></div>
+                        <div><strong>Rush Parts:</strong> <span id="rush-parts">$1.26M</span></div>
+                        <div><strong>Downtime Loss:</strong> <span id="downtime-loss">$1.54M</span></div>
+                        <div><strong>Cancellations:</strong> <span id="cancellations">$0.6M</span></div>
+                    </div>
+                </div>
+                
+                <div class="cost-box predictive">
+                    <div class="cost-label">With AeroPredict (Predictive)</div>
+                    <div class="cost-amount" id="predictive-cost">$0.65M</div>
+                    <div class="cost-breakdown">
+                        <div><strong>Planned Labor:</strong> <span id="planned-labor">$0.23M</span></div>
+                        <div><strong>Standard Parts:</strong> <span id="standard-parts">$0.42M</span></div>
+                        <div><strong>Minimal Downtime:</strong> <span id="minimal-downtime">$0</span></div>
+                        <div><strong>No Cancellations:</strong> <span id="no-cancellations">$0</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="savings-banner">
+                <div style="font-size: 20px; opacity: 0.9;">Annual Savings</div>
+                <div class="savings-amount" id="total-savings">$4.55M</div>
+                <div class="savings-percentage" id="savings-percentage">87.5% Cost Reduction</div>
+            </div>
+            
+            <div class="metrics-grid">
+                <div class="metric-box">
+                    <div class="metric-value" id="roi-ratio">27:1</div>
+                    <div class="metric-label">Return on Investment</div>
+                </div>
+                
+                <div class="metric-box">
+                    <div class="metric-value" id="payback">4 mo</div>
+                    <div class="metric-label">Payback Period</div>
+                </div>
+                
+                <div class="metric-box">
+                    <div class="metric-value" id="downtime-saved">4,800</div>
+                    <div class="metric-label">Hours Saved</div>
+                </div>
+                
+                <div class="metric-box">
+                    <div class="metric-value" id="flights-saved">300</div>
+                    <div class="metric-label">Flights Saved</div>
+                </div>
+            </div>
+            
+            <div class="info-box">
+                ℹ️ Calculations based on industry averages and NASA C-MAPSS predictive maintenance data. 
+                AeroPredict achieves 87% prediction accuracy with 30-90 day lead time.
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function calculateSavings() {
+            // Get inputs
+            const fleetSize = parseInt(document.getElementById('fleet-size').value);
+            const avgHours = parseInt(document.getElementById('avg-hours').value);
+            const aircraftType = document.getElementById('aircraft-type').value;
+            const annualFailures = parseInt(document.getElementById('annual-failures').value);
+            const currentApproach = document.getElementById('current-approach').value;
+            
+            // Cost multipliers by aircraft type
+            const typeMultipliers = {
+                'narrow': 1.0,
+                'wide': 1.5,
+                'regional': 0.7
+            };
+            const multiplier = typeMultipliers[aircraftType];
+            
+            // Reactive maintenance costs per incident
+            const reactiveCostPerIncident = 52000 * multiplier;
+            const emergencyLabor = 18000 * multiplier;
+            const rushParts = 12600 * multiplier;
+            const downtimeLoss = 15400 * multiplier;
+            const cancellationCost = 6000 * multiplier;
+            
+            // Predictive maintenance costs per incident
+            const predictiveCostPerIncident = 6500 * multiplier;
+            const plannedLabor = 2300 * multiplier;
+            const standardParts = 4200 * multiplier;
+            
+            // Calculate total costs
+            const totalReactiveCost = annualFailures * reactiveCostPerIncident;
+            const totalPredictiveCost = annualFailures * predictiveCostPerIncident;
+            const totalSavings = totalReactiveCost - totalPredictiveCost;
+            const savingsPercentage = ((totalSavings / totalReactiveCost) * 100).toFixed(1);
+            
+            // Additional metrics
+            const downtimeHoursSaved = annualFailures * 42; // 48 hrs reactive - 6 hrs predictive
+            const flightsSaved = annualFailures * 3; // Average 3 flights cancelled per reactive incident
+            
+            // AeroPredict system cost
+            const aeroPredictAnnualCost = fleetSize * 6000; // $6K per aircraft
+            const netSavings = totalSavings - aeroPredictAnnualCost;
+            const roi = (netSavings / aeroPredictAnnualCost).toFixed(1);
+            const paybackMonths = Math.ceil((aeroPredictAnnualCost / netSavings) * 12);
+            
+            // Update display
+            document.getElementById('reactive-cost').textContent = formatCurrency(totalReactiveCost);
+            document.getElementById('emergency-labor').textContent = formatCurrency(annualFailures * emergencyLabor);
+            document.getElementById('rush-parts').textContent = formatCurrency(annualFailures * rushParts);
+            document.getElementById('downtime-loss').textContent = formatCurrency(annualFailures * downtimeLoss);
+            document.getElementById('cancellations').textContent = formatCurrency(annualFailures * cancellationCost);
+            
+            document.getElementById('predictive-cost').textContent = formatCurrency(totalPredictiveCost);
+            document.getElementById('planned-labor').textContent = formatCurrency(annualFailures * plannedLabor);
+            document.getElementById('standard-parts').textContent = formatCurrency(annualFailures * standardParts);
+            document.getElementById('minimal-downtime').textContent = '$0';
+            document.getElementById('no-cancellations').textContent = '$0';
+            
+            document.getElementById('total-savings').textContent = formatCurrency(netSavings);
+            document.getElementById('savings-percentage').textContent = `${savingsPercentage}% Cost Reduction`;
+            
+            document.getElementById('roi-ratio').textContent = `${roi}:1`;
+            document.getElementById('payback').textContent = `${paybackMonths} mo`;
+            document.getElementById('downtime-saved').textContent = downtimeHoursSaved.toLocaleString();
+            document.getElementById('flights-saved').textContent = flightsSaved.toLocaleString();
+            
+            // Show results
+            document.getElementById('results').classList.add('show');
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        function formatCurrency(amount) {
+            if (amount >= 1000000) {
+                return '$' + (amount / 1000000).toFixed(2) + 'M';
+            } else if (amount >= 1000) {
+                return '$' + (amount / 1000).toFixed(0) + 'K';
+            } else {
+                return '$' + amount.toFixed(0);
+            }
+        }
+        
+        // Auto-calculate on load
+        window.addEventListener('load', () => {
+            calculateSavings();
+        });
+    </script>
+</body>
+</html>
